@@ -1,7 +1,10 @@
+import 'package:dash2/database/collection.dart';
+import 'package:dash2/database/enable_collections.dart';
 import 'package:dash2/database/item.dart';
 import 'package:dash2/database/setup.dart';
 import 'package:dash2/screens/main_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
@@ -14,11 +17,16 @@ Future<void> main() async {
   Hive.init(appDocumentDirectory.path);
   Hive.registerAdapter(SetupAdapter());
   Hive.registerAdapter(ItemAdapter());
+  Hive.registerAdapter(CollectionAdapter());
+  Hive.registerAdapter(EnableCollectionsAdapter());
 
-  var setupBox = await Hive.openBox("setup4");
+  var setupBox = await Hive.openBox("setup5");
   var itemBox = await Hive.openBox("items");
+  var collectionBox = await Hive.openBox("collections");
+  var enableCollections = await Hive.openBox("enable_collections");
 
-  if(setupBox.length == 0) setupBox.add(Setup("light", default_size, false, false, default_size));
+  if(setupBox.length == 0) setupBox.add(Setup("light", default_size, false, false, default_size, 0));
+  if(enableCollections.length == 0) enableCollections.add(EnableCollections(false));
 
   runApp(MyApp());
 }
@@ -26,10 +34,15 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
     return ValueListenableBuilder(
-      valueListenable: Hive.box("setup4").listenable(),
+      valueListenable: Hive.box("setup5").listenable(),
       builder: (context, setupBox, _) {
-        final setup = Hive.box("setup4").getAt(0) as Setup;
+        final setup = Hive.box("setup5").getAt(0) as Setup;
 
         return MaterialApp(
           debugShowCheckedModeBanner: false,

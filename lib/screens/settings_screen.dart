@@ -1,3 +1,4 @@
+import 'package:dash2/database/enable_collections.dart';
 import 'package:dash2/database/setup.dart';
 import 'package:dash2/screens/widgets/FloatingActionButton.dart';
 import 'package:flutter/cupertino.dart';
@@ -31,6 +32,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final setup = Hive.box("setup5").getAt(0) as Setup;
+    final enableCollections = Hive.box("enable_collections").getAt(0) as EnableCollections;
+
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: CustomFloatingActionButton(callback: () => pop(), icon: Icons.arrow_back_ios_rounded),
@@ -44,12 +48,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Text("Settings", style: TextStyle(fontSize: 25))
             ),
 
-            _buildSampleItem(),
-            _buildReverseOrder(),
-            _buildSendByEnter(),
-            _buildChangeFont(),
-            _buildChangeBoxSize(),
-            _buildChangeTheme(),
+            _buildSampleItem(setup),
+            _buildReverseOrder(setup),
+            _buildSendByEnter(setup),
+            _buildEnableCollections(enableCollections),
+            _buildChangeFont(setup),
+            _buildChangeBoxSize(setup),
+            _buildChangeTheme(setup),
             Divider(thickness: 1),
           ]
         )
@@ -57,9 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSampleItem() {
-    final setup = Hive.box("setup4").getAt(0) as Setup;
-
+  Widget _buildSampleItem(Setup setup) {
     return Column(
       children: [
         Container(height: padding),
@@ -79,38 +82,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Padding(
               padding: EdgeInsets.only(right: setup.reverse ? 0 : padding, left: setup.reverse ? padding : 0),
               child: Icon(Icons.delete_outline_rounded, size: 30),
-            )
+            ),
+
+            setup
           )
         )
       ]
     );
   }
 
-  Widget _buildReverseOrder() {
-    final setup = Hive.box("setup4").getAt(0) as Setup;
-
+  Widget _buildReverseOrder(Setup setup) {
     return SwitchListTile(
       activeColor: Colors.blue,
       title: Text("Reverse button order", style: TextStyle(fontSize: 20)),
-      onChanged: (value) { Hive.box("setup4").putAt(0, Setup(setup.theme, setup.size, value, setup.useEnter, setup.boxSize)); setState(() {}); },
+      onChanged: (value) { Hive.box("setup5").putAt(0, Setup(setup.theme, setup.size, value, setup.useEnter, setup.boxSize, setup.page)); setState(() {}); },
       value: setup.reverse,
     );
   }
 
-  Widget _buildSendByEnter() {
-    final setup = Hive.box("setup4").getAt(0) as Setup;
-
+  Widget _buildSendByEnter(Setup setup) {
     return SwitchListTile(
       activeColor: Colors.blue,
       title: Text("Confirm by Enter", style: TextStyle(fontSize: 20)),
       value: setup.useEnter,
-      onChanged: (bool value) { Hive.box("setup4").putAt(0, Setup(setup.theme, setup.size, setup.reverse, value, setup.boxSize)); setState(() {}); },
+      onChanged: (value) { Hive.box("setup5").putAt(0, Setup(setup.theme, setup.size, setup.reverse, value, setup.boxSize, setup.page)); setState(() {}); },
     );
   }
 
-  Widget _buildChangeFont() {
-    final setup = Hive.box("setup4").getAt(0) as Setup;
+  Widget _buildEnableCollections(EnableCollections enableCollections) {
+    return SwitchListTile(
+      activeColor: Colors.blue,
+      title: Text("Swipe to access Folders", style: TextStyle(fontSize: 20)),
+      value: enableCollections.isEnabled,
+      onChanged: (value) { Hive.box("enable_collections").putAt(0, EnableCollections(value)); setState(() {}); },
+    );
+  }
 
+  Widget _buildChangeFont(Setup setup) {
     return Column(
       children: [
         Row(
@@ -119,7 +127,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Align(
               alignment: Alignment(-1.0, 0),
               child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 10, 16, 10),
+                padding: EdgeInsets.fromLTRB(16, 12, 16, 10),
                 child: Text("Change font size", style: TextStyle(fontSize: 20)),
               )
             ),
@@ -132,7 +140,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ]
               ),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(60)),
-              onPressed: () { Hive.box("setup4").putAt(0, Setup(setup.theme, default_size, setup.reverse, setup.useEnter, setup.boxSize)); setState(() {}); },
+              onPressed: () { Hive.box("setup5").putAt(0, Setup(setup.theme, default_size, setup.reverse, setup.useEnter, setup.boxSize, setup.page)); setState(() {}); },
             )
           ]
         ),
@@ -140,7 +148,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Slider(
           max: 40,
           min: 15,
-          onChanged: (value) { Hive.box("setup4").putAt(0, Setup(setup.theme, value + 50, setup.reverse, setup.useEnter, setup.boxSize)); setState(() {}); },
+          onChanged: (value) { Hive.box("setup5").putAt(0, Setup(setup.theme, value + 50, setup.reverse, setup.useEnter, setup.boxSize, setup.page)); setState(() {}); },
           value: setup.size - 50,
           label: "${setup.size - 50}",
           divisions: 25,
@@ -149,9 +157,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildChangeBoxSize() {
-    final setup = Hive.box("setup4").getAt(0) as Setup;
-
+  Widget _buildChangeBoxSize(Setup setup) {
     return Column(
       children: [
         Row(
@@ -161,7 +167,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               alignment: Alignment(-1.0, 0),
               child: Padding(
                 padding: EdgeInsets.fromLTRB(16, 10, 16, 10),
-                child: Text("Change font size", style: TextStyle(fontSize: 20)),
+                child: Text("Change box size", style: TextStyle(fontSize: 20)),
               )
             ),
 
@@ -173,7 +179,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ]
               ),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(60)),
-              onPressed: () { Hive.box("setup4").putAt(0, Setup(setup.theme, setup.size, setup.reverse, setup.useEnter, default_size)); setState(() {}); },
+              onPressed: () { Hive.box("setup5").putAt(0, Setup(setup.theme, setup.size, setup.reverse, setup.useEnter, default_size, setup.page)); setState(() {}); },
             )
           ]
         ),
@@ -181,7 +187,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Slider(
           max: 100,
           min: 50,
-          onChanged: (value) { Hive.box("setup4").putAt(0, Setup(setup.theme, setup.size, setup.reverse, setup.useEnter, value)); setState(() {}); },
+          onChanged: (value) { Hive.box("setup5").putAt(0, Setup(setup.theme, setup.size, setup.reverse, setup.useEnter, value, setup.page)); setState(() {}); },
           value: setup.boxSize,
           label: "${setup.boxSize}",
           divisions: 50,
@@ -190,7 +196,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildChangeTheme() {
+  Widget _buildChangeTheme(Setup setup) {
     return Column(
       children: [
         Padding(
@@ -201,10 +207,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Container(
           height: 400,
           child: PageView.builder(
+            physics: BouncingScrollPhysics(),
             controller: pageController,
             itemCount: 2,
             itemBuilder: (context, index) {
-              return _buildParallax(index);
+              return _buildParallax(index, setup);
             }
           )
         )
@@ -212,11 +219,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildParallax(int index) {
-    final setup = Hive.box("setup4").getAt(0) as Setup;
-
+  Widget _buildParallax(int index, Setup setup) {
     return GestureDetector(
-      onTap: () { Hive.box("setup4").putAt(0, Setup(index == 0 ? "light" : "dark", setup.size, setup.reverse, setup.useEnter, setup.boxSize)); setState(() {}); },
+      onTap: () { Hive.box("setup5").putAt(0, Setup(index == 0 ? "light" : "dark", setup.size, setup.reverse, setup.useEnter, setup.boxSize, setup.page)); setState(() {}); },
       child: Transform.scale(
         scale: 1,
         child: Container(
@@ -246,9 +251,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildContainerRow(Widget left, Widget center, Widget right) {
-    final setup = Hive.box("setup4").getAt(0) as Setup;
-
+  Widget _buildContainerRow(Widget left, Widget center, Widget right, Setup setup) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

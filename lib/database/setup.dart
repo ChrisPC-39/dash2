@@ -19,5 +19,8 @@ class Setup {
   @HiveField(4)
   final double boxSize;
 
-  Setup(this.theme, this.size, this.reverse, this.useEnter, this.boxSize);
+  @HiveField(5)
+  final int page;
+
+  Setup(this.theme, this.size, this.reverse, this.useEnter, this.boxSize, this.page);
 }
